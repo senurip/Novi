@@ -50,3 +50,5 @@ export const updateNote = async (id: string, data: Partial<Note>) => {
 export const deleteNote = async (id: string) => {
   await deleteDoc(doc(db, "notes", id));
 };
+
+

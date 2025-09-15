@@ -14,11 +14,6 @@ const DashboardLayout = () => {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "#999",
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: "#ccc"
-        }
       }}
     >
       {/* (obj.name) ===  ({name}) */}

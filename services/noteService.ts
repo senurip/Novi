@@ -1,54 +1,65 @@
-import { db, storage } from "../firebase";
+import { db } from "../firebase";
 import {
-  collection,
   addDoc,
-  getDocs,
-  updateDoc,
+  collection,
   deleteDoc,
   doc,
+  getDocs,
   query,
+  updateDoc,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { Note } from "../types/note";
 
-// Notes collection
-const notesCollection = collection(db, "notes");
-
-// Add new note
-export const addNote = async (note: Note, imageFile?: Blob) => {
-  let imageUrl = "";
-
-  if (imageFile) {
-    const storageRef = ref(storage, `notes/${Date.now()}-${note.userId}`);
-    await uploadBytes(storageRef, imageFile);
-    imageUrl = await getDownloadURL(storageRef);
-  }
-
-  const docRef = await addDoc(notesCollection, {
-    ...note,
-    imageUrl,
-    createdAt: new Date(),
+export const addNote = async (
+  userId: string,
+  title: string,
+  content: string,
+  category: string,
+  imageUri?: string | null,
+  videoUri?: string | null,
+  fileUri?: string | null
+) => {
+  const noteRef = collection(db, "notes");
+  const docRef = await addDoc(noteRef, {
+    userId,
+    title,
+    content,
+    category,
+    imageUri: imageUri || null,
+    videoUri: videoUri || null,
+    fileUri: fileUri || null,
+    createdAt: serverTimestamp(),
   });
-
   return docRef.id;
 };
 
-// Get notes by user
-export const getNotesByUser = async (userId: string): Promise<Note[]> => {
-  const q = query(notesCollection, where("userId", "==", userId));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Note[];
+export const getNotes = async (userId: string) => {
+  const noteRef = collection(db, "notes");
+  const q = query(noteRef, where("userId", "==", userId));
+  const snap = await getDocs(q);
+
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
 };
 
-// Update note
-export const updateNote = async (id: string, data: Partial<Note>) => {
-  await updateDoc(doc(db, "notes", id), data);
+export const updateNote = async (
+  id: string,
+  title: string,
+  content: string,
+  category: string
+) => {
+  const noteDoc = doc(db, "notes", id);
+  await updateDoc(noteDoc, {
+    title,
+    content,
+    category,
+  });
 };
 
-// Delete note
 export const deleteNote = async (id: string) => {
-  await deleteDoc(doc(db, "notes", id));
+  const noteDoc = doc(db, "notes", id);
+  await deleteDoc(noteDoc);
 };
-
-

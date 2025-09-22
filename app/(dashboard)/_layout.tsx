@@ -1,22 +1,27 @@
-import { MaterialIcons } from "@expo/vector-icons"
-import { Tabs } from "expo-router"
-import React from "react"
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Tabs } from "expo-router";
+import React from "react";
 
 const tabs = [
-  { label: "Home", name: "home", icon: "home-filled" },
-  
+  { label: "Home", name: "index", icon: "home" },
+  { label: "Notes", name: "notes", icon: "note" },
   { label: "Profile", name: "profile", icon: "person" },
-  { label: "Settings", name: "settings", icon: "settings" }
-] as const
+];
 
 const DashboardLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#007AFF",
+        tabBarActiveTintColor: "#FF6B8B",
+        tabBarInactiveTintColor: "#999",
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: "#fff",
+          height: 60,
+          paddingBottom: 5,
+        },
       }}
     >
-      {/* (obj.name) ===  ({name}) */}
       {tabs.map(({ name, icon, label }) => (
         <Tabs.Screen
           key={name}
@@ -24,15 +29,13 @@ const DashboardLayout = () => {
           options={{
             title: label,
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name={icon} color={color} size={size} />
-            )
+              <MaterialIcons name={icon as any} color={color} size={size} />
+            ),
           }}
         />
       ))}
     </Tabs>
-  )
-}
+  );
+};
 
-// tasks/index
-
-export default DashboardLayout
+export default DashboardLayout;

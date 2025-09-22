@@ -1,123 +1,171 @@
+import { Ionicons, Feather } from "@expo/vector-icons";
+import { ResizeMode, Video } from "expo-av";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  Alert,
   FlatList,
-  TouchableOpacity,
   Image,
-  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { auth } from "@/firebase";
-import { getNotesByUser, deleteNote } from "@/services/noteService";
-import { Note } from "@/types/note";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../context/AuthContext";
+import { addNote, deleteNote, getNotes, updateNote } from "../../services/noteService";
 
-const Profile = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(false);
-  const userId = auth.currentUser?.uid || "";
-  const navigation = useNavigation<any>();
+export default function ProfilePage() {
+  const { user, logoutUser } = useAuth();
+  const [image, setImage] = useState<string | null>(null);
+  const [notes, setNotes] = useState<any[]>([]);
 
-  const loadNotes = async () => {
-    if (!userId) return;
-    setLoading(true);
-    const data = await getNotesByUser(userId);
-    setNotes(data);
-    setLoading(false);
+  // For editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+
+  const categories = ["Personal", "Work", "Study", "Ideas", "Other"];
+  const categoryColors: { [key: string]: string } = {
+    Personal: "#FFB6C1",
+    Work: "#87CEFA",
+    Study: "#FFD700",
+    Ideas: "#90EE90",
+    Other: "#D3D3D3",
   };
 
-  const removeNote = async (id: string) => {
-    await deleteNote(id);
-    loadNotes();
+  // Load notes
+  const loadNotes = async () => {
+    if (!user?.uid) return;
+    const data = await getNotes(user.uid);
+    setNotes(data);
   };
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      loadNotes(); // reload notes when screen focused
-    });
-    return unsubscribe;
-  }, [navigation]);
+    loadNotes();
+  }, [user]);
+
+  // Edit handlers
+  const handleEdit = (note: any) => {
+    setEditingId(note.id);
+    setEditTitle(note.title);
+    setEditContent(note.content);
+  };
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editTitle || !editContent) return;
+    const note = notes.find((n) => n.id === id);
+    await updateNote(id, editTitle, editContent, note?.category || "Other");
+    setEditingId(null);
+    setEditTitle("");
+    setEditContent("");
+    loadNotes();
+  };
+
+  const handleDelete = async (id: string) => {
+    Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
+      { text: "Cancel" },
+      {
+        text: "Delete",
+        onPress: async () => {
+          await deleteNote(id);
+          loadNotes();
+        },
+        style: "destructive",
+      },
+    ]);
+  };
 
   return (
-    <View style={{ flex: 1, padding: 15, backgroundColor: "#f8f9fa" }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 15 }}>
-        My Notes
-      </Text>
+    <ScrollView style={styles.container}>
+      {/* Profile header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>👤 Profile</Text>
+        <TouchableOpacity onPress={logoutUser}>
+          <Ionicons name="log-out-outline" size={28} color="#FF6B8B" />
+        </TouchableOpacity>
+      </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#0984e3" />
+      {image ? (
+        <Image source={{ uri: image }} style={styles.profileImage} />
       ) : (
-        <FlatList
-          data={notes}
-          keyExtractor={(item) => item.id!}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                backgroundColor: "white",
-                padding: 15,
-                borderRadius: 12,
-                marginBottom: 10,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-              }}
-            >
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                  {item.title}
-                </Text>
-                <Text numberOfLines={2} style={{ color: "#666" }}>
-                  {item.content}
-                </Text>
-                {item.imageUrl && (
-                  <Image
-                    source={{ uri: item.imageUrl }}
-                    style={{
-                      width: 80,
-                      height: 80,
-                      marginTop: 5,
-                      borderRadius: 8,
-                    }}
-                  />
-                )}
-              </View>
-
-              <TouchableOpacity onPress={() => removeNote(item.id!)}>
-                <MaterialIcons name="delete" size={24} color="#FF4757" />
-              </TouchableOpacity>
-            </View>
-          )}
-          ListEmptyComponent={() => (
-            <Text style={{ textAlign: "center", marginTop: 20, color: "#666" }}>
-              No notes yet. Tap + to add one!
-            </Text>
-          )}
-        />
+        <Text style={styles.subtitle}>No profile picture selected</Text>
       )}
 
-      {/* Floating Add Button */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("AddNote")}
-        style={{
-          position: "absolute",
-          right: 20,
-          bottom: 20,
-          backgroundColor: "#0984e3",
-          padding: 18,
-          borderRadius: 50,
-          elevation: 5,
-        }}
-      >
-        <MaterialIcons name="add" size={28} color="white" />
-      </TouchableOpacity>
-    </View>
-  );
-};
+      {/* Notes */}
+      <Text style={styles.notesTitle}>📝 Your Notes</Text>
+      <FlatList
+        data={notes}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={[styles.noteCard, { backgroundColor: categoryColors[item.category] || "#FFF" }]}>
+            {editingId === item.id ? (
+              <>
+                <TextInput style={styles.input} value={editTitle} onChangeText={setEditTitle} />
+                <TextInput
+                  style={[styles.input, { height: 60 }]}
+                  value={editContent}
+                  onChangeText={setEditContent}
+                  multiline
+                />
+                <View style={{ flexDirection: "row", gap: 16 }}>
+                  <TouchableOpacity onPress={() => handleSaveEdit(item.id)}>
+                    <Text style={{ color: "#FF6B8B", fontWeight: "700" }}>Save</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setEditingId(null)}>
+                    <Text style={{ color: "#FF6B8B", fontWeight: "700" }}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <View style={styles.noteHeader}>
+                  <Text style={styles.noteTitle}>{item.title}</Text>
+                  <Text style={styles.noteCategory}>{item.category}</Text>
+                </View>
+                <Text style={styles.noteContent}>{item.content}</Text>
 
-export default Profile;
+                {item.imageUri && <Image source={{ uri: item.imageUri }} style={styles.mediaPreview} />}
+                {item.videoUri && (
+                  <Video source={{ uri: item.videoUri }} style={styles.mediaPreview} useNativeControls resizeMode={ResizeMode.CONTAIN} />
+                )}
+                {item.fileUri && <Text style={{ marginTop: 8 }}>📄 {item.fileUri.split("/").pop()}</Text>}
+
+                <View style={styles.noteActions}>
+                  <TouchableOpacity onPress={() => handleEdit(item)} style={styles.actionButton}>
+                    <Feather name="edit-2" size={16} color="#FF6B8B" />
+                    <Text>Edit</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.actionButton}>
+                    <Feather name="trash-2" size={16} color="#FF6B8B" />
+                    <Text>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        )}
+        ListEmptyComponent={<Text style={styles.emptyText}>No notes yet</Text>}
+      />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16, backgroundColor: "#FFECF1" },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: "700", color: "#FF6B8B" },
+  subtitle: { fontSize: 16, color: "#555", marginBottom: 20 },
+  profileImage: { width: 150, height: 150, borderRadius: 75, marginBottom: 20 },
+  notesTitle: { fontSize: 20, fontWeight: "700", marginBottom: 8, color: "#FF6B8B" },
+  noteCard: { padding: 12, borderRadius: 16, marginBottom: 12 },
+  noteHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  noteTitle: { fontWeight: "700", fontSize: 16, color: "#FF6B8B" },
+  noteCategory: { fontSize: 12, color: "#FF6B8B", fontStyle: "italic" },
+  noteContent: { fontSize: 14, color: "#FF6B8B" },
+  noteActions: { flexDirection: "row", marginTop: 8, gap: 12 },
+  actionButton: { flexDirection: "row", alignItems: "center", gap: 4 },
+  mediaPreview: { width: "100%", height: 200, borderRadius: 12, marginTop: 8 },
+  input: { backgroundColor: "#FFF", padding: 8, borderRadius: 12, marginBottom: 8, color: "#FF6B8B" },
+  emptyText: { textAlign: "center", marginTop: 20, color: "#FF6B8B" },
+});

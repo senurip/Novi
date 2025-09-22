@@ -1,18 +1,32 @@
-import { auth } from "@/firebase"
+
+
+// services/authService.ts
+import { auth } from "@/firebase"; // use named import for 'auth'
+
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
-} from "firebase/auth"
+  signOut,
+  onAuthStateChanged,
+  User
+} from "firebase/auth";
 
-export const register = (email: string, password: string) => {
-  return createUserWithEmailAndPassword(auth, email, password)
-}
+// Register user
+export const register = async (email: string, password: string) => {
+  return await createUserWithEmailAndPassword(auth, email, password);
+};
 
-export const login = (email: string, password: string) => {
-  return signInWithEmailAndPassword(auth, email, password)
-}
+// Login user
+export const login = async (email: string, password: string) => {
+  return await signInWithEmailAndPassword(auth, email, password);
+};
 
-export const logout = () => {
-  return signOut(auth)
-}
+// Logout user
+export const logout = async () => {
+  return await signOut(auth);
+};
+
+// Subscribe to auth state changes
+export const subscribeToAuthChanges = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};

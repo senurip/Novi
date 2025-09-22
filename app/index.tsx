@@ -1,29 +1,21 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native"
-import React, { useEffect } from "react"
-import { useRouter } from "expo-router"
-import { useAuth } from "@/context/AuthContext"
 
-const Index = () => {
-  const router = useRouter()
-  const { user, loading } = useAuth()
-  console.log("User data : ", user)
+// app/index.tsx
+import React from "react";
+import { View, ActivityIndicator } from "react-native";
+import { useAuth } from "../context/AuthContext";
+import { Redirect } from "expo-router";
 
-  useEffect(() => {
-    if (!loading) {
-      if (user) router.replace("/home")
-      else router.replace("/login")
-    }
-  }, [user, loading])
+export default function Index() {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <View className="flex-1 w-full justify-center align-items-center">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
-    )
+    );
   }
 
-  return null
+  // If user logged in → dashboard, else → login
+  return user ? <Redirect href="/(dashboard)" /> : <Redirect href="/(auth)/login" />;
 }
-
-export default Index

@@ -9,35 +9,22 @@
 //   reminderTime?: string;   // e.g., "2025-09-07T10:00"
 //   createdAt?: Date;
 // }
+
+
 export interface Note {
   id: string;
   title: string;
   content: string;
-  imageURL?: string;
-  imageURI?: string; // Local image URI before upload
-  important: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-  tags?: string[];
-  category?: string;
-}
+  category: string;
+  
+  // Store URLs (or null if not uploaded)
+  //file?: string | null;
+  audio?: string | null;
 
-export interface CreateNoteData {
-  title: string;
-  content: string;
-  imageURI?: string;
-  important?: boolean;
-  tags?: string[];
-  category?: string;
-}
-
-export interface UpdateNoteData {
-  title?: string;
-  content?: string;
-  imageURL?: string;
-  imageURI?: string;
-  important?: boolean;
-  tags?: string[];
-  category?: string;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  fileUrl?: string | null;
+  
+  
+  createdAt?: { seconds: number; nanoseconds?: number } | Date;
 }

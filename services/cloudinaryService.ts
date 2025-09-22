@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const CLOUD_NAME = "notezycloud"; 
+const CLOUD_NAME = "ndtwr5tktr"; 
 const UPLOAD_PRESET = "novi_preset"; 
 
 

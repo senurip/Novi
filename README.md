@@ -12,7 +12,7 @@ You can test the Novi app by downloading the APK:
 ## 🎥 Demo Video
 
 Watch the demo of the Novi app here:  
-[▶️ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+[▶️ Watch on YouTube]([https://www.youtube.com/watch?v=YOUR_VIDEO_ID](https://youtu.be/3Zwf-lvMht8))
 
 ---
 
@@ -128,4 +128,5 @@ Notes are stored in Firestore under the logged-in user’s userId.
 Media files (images/videos/files/audio) are uploaded to Cloudinary and stored in the note document as URLs.
 
 If you plan to add audio recording, you can use expo-av.
+
 

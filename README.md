@@ -3,6 +3,17 @@
 Novi is a React Native mobile application for creating, managing, and organizing notes.  
 It supports **text, images, videos, files, and audio notes**, with media uploads powered by **Cloudinary** and secure storage via **Firebase Firestore**.
 
+## 📲 Download APK
+
+You can test the Novi app by downloading the APK:
+
+[📥 Download Novi APK](https://docs.google.com/uc?export=download&id=1O9_H1-zkqf_18JsZom9zI1WwY5vTr24G)
+
+## 🎥 Demo Video
+
+Watch the demo of the Novi app here:  
+[▶️ Watch on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+
 ---
 
 ## 🚀 Features
@@ -117,3 +128,4 @@ Notes are stored in Firestore under the logged-in user’s userId.
 Media files (images/videos/files/audio) are uploaded to Cloudinary and stored in the note document as URLs.
 
 If you plan to add audio recording, you can use expo-av.
+
